@@ -16,6 +16,7 @@
 
 #define DATABASE_LED D5
 #define AWS_LED D6
+#define PUBLISH_LED D7
 
 const char* SSID = "Virus";
 const char* PASSWORD = "91b6e1ce4e";
@@ -26,7 +27,7 @@ PubSubClient databaseMQTT(databaseBrokerClient);
 Adafruit_ADS1115 ads(0x48);
 
 boolean databaseConnected = false;
-int publishInterval = 0;
+int publishInterval = 2;
 int bodyTemperature = 31;
 int heartFrequency = 85;
 
@@ -53,8 +54,10 @@ void setup(){
 
   pinMode(DATABASE_LED, OUTPUT);
   pinMode(AWS_LED, OUTPUT);
+  pinMode(PUBLISH_LED, OUTPUT);
   digitalWrite(DATABASE_LED, LOW);
   digitalWrite(AWS_LED, LOW);
+  digitalWrite(PUBLISH_LED, LOW);
 }
 
 void loop(){
@@ -62,7 +65,7 @@ void loop(){
   bodyTemperature = int(float(ads.readADC_SingleEnded(1)/MAX_ADC_READ)*MAX_BODY_TEMP);
   database_mqtt_check();
   
-  delay(1000);
+  delay(5000);
 }
 
 void database_mqtt_callback(char* topic, byte* payload, unsigned int length){
@@ -102,6 +105,9 @@ void database_mqtt_check(){
     if(databaseMQTT.publish(PUBLISH_TOPIC, JSONmessageBuffer)){
       Serial.print("[INFO] Values sent to database broker: ");
       Serial.println(JSONmessageBuffer);
+      digitalWrite(PUBLISH_LED, HIGH);
+      delay(100);
+      digitalWrite(PUBLISH_LED, LOW);
     }
     else
       Serial.print("[INFO] Values not sent to database broker");
