@@ -3,6 +3,8 @@
 #include <ArduinoJson.h>
 #include <Wire.h>
 #include <Adafruit_ADS1015.h>
+#include <NTPClient.h>
+#include <WiFiUdp.h>
 
 #define DATABASE_BROKER_MQTT "192.168.0.104"
 #define DATABASE_BROKER_PORT 1883
@@ -18,6 +20,13 @@
 #define AWS_LED D6
 #define PUBLISH_LED D7
 
+#define NTP_OFFSET   60 * 60      
+#define NTP_INTERVAL 60 * 1000    
+#define NTP_ADDRESS  "a.st1.ntp.br"
+
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, NTP_ADDRESS, NTP_OFFSET, NTP_INTERVAL);
+
 const char* SSID = "Virus";
 const char* PASSWORD = "91b6e1ce4e";
 
@@ -25,11 +34,19 @@ WiFiClient databaseBrokerClient;
 PubSubClient databaseMQTT(databaseBrokerClient);
 
 Adafruit_ADS1115 ads(0x48);
-
-boolean databaseConnected = false;
-int publishInterval = 2;
+boolean databaseConnected = true;
 int bodyTemperature = 31;
 int heartFrequency = 85;
+
+int publishInterval = 2;
+unsigned long currentTimestamp = 0;
+unsigned long publishTimestamp = 0;
+
+StaticJsonBuffer<300> JSONbuffer;
+JsonObject& JSONencoder = JSONbuffer.createObject();
+JsonArray& timestampList = JSONencoder.createNestedArray("timestamp");
+JsonArray& bodyTemperatureList = JSONencoder.createNestedArray("temperatura");
+JsonArray& heartFrequencyList = JSONencoder.createNestedArray("frequencia_cardiaca");
 
 void setup(){
   Serial.begin(115200);
@@ -58,12 +75,19 @@ void setup(){
   digitalWrite(DATABASE_LED, LOW);
   digitalWrite(AWS_LED, LOW);
   digitalWrite(PUBLISH_LED, LOW);
+
+  timeClient.begin();
+  JSONencoder["origem_dado"] = "pulseira";
 }
 
 void loop(){
+  timeClient.update();
+  
   heartFrequency = int(float(ads.readADC_SingleEnded(0)/MAX_ADC_READ)*MAX_HEART_FREQ);
   bodyTemperature = int(float(ads.readADC_SingleEnded(1)/MAX_ADC_READ)*MAX_BODY_TEMP);
   database_mqtt_check();
+  if(databaseConnected == false)
+    aws_mqtt_check();
   
   delay(5000);
 }
@@ -87,9 +111,13 @@ void database_mqtt_check(){
       Serial.println("[INFO] Database broker connected");
       databaseConnected = true;
       digitalWrite(DATABASE_LED, HIGH);
+      currentTimestamp = 0.0;
     }
     else{
-      Serial.println("[INFO] Database broker not connected");
+      if(databaseConnected == true){
+       publishTimestamp = timeClient.getEpochTime() + (publishInterval*60);
+       Serial.println("[INFO] Database not connected. Bracelet will publish on cloud");
+      }
       databaseConnected = false;
       digitalWrite(DATABASE_LED, LOW);
     }
@@ -114,4 +142,31 @@ void database_mqtt_check(){
     
   }
   databaseMQTT.loop();
+}
+
+void aws_mqtt_check(){
+  currentTimestamp = timeClient.getEpochTime();
+  Serial.println("[INFO] Saving data to send to cloud");
+  digitalWrite(AWS_LED, HIGH);
+  
+  timestampList.add(currentTimestamp);
+  bodyTemperatureList.add(bodyTemperature);
+  heartFrequencyList.add(heartFrequency);
+
+  if(currentTimestamp >= publishTimestamp){
+    publishTimestamp = timeClient.getEpochTime() + (publishInterval*60);
+
+    digitalWrite(PUBLISH_LED, HIGH);
+    delay(100);
+    digitalWrite(PUBLISH_LED, LOW);
+
+    Serial.println("[INFO] Values sent to cloud broker");
+
+    char JSONmessageBuffer[100];
+    JSONencoder.printTo(JSONmessageBuffer, sizeof(JSONmessageBuffer));
+    Serial.println(JSONmessageBuffer);
+    Serial.println("-------------");
+
+  }
+
 }
