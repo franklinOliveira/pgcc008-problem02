@@ -1,0 +1,20 @@
+1. Entrar na aplicação
+"Alexa, minha pulseira"
+
+2.1 Configurar o tempo de envio
+"Mude o tempo de envio para 5 minutos."
+
+2.2 Capturar o tempo de envio
+"Informe o tempo de atualização dos dados."
+
+2.3 Configurar o tempo de desconexão
+"Mude o tempo de desconexão para 5 minutos."
+
+2.5 Capturar o tempo de desconexão
+"Informe a tolerância de ausência de dados."
+
+2.6 Capturar o status da pulseira
+"Informe o status da pulseira."
+
+2.6 Capturar os dados de monitoramento
+"Informe os dados de monitoramento."

@@ -1,0 +1,79 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "minha pulseira",
+      "intents": [
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "IntervalChangeIntent",
+          "slots": [
+            {
+              "name": "minutos",
+              "type": "AMAZON.NUMBER"
+            }
+          ],
+          "samples": [
+            "intervalo de envio para {minutos} minutos"
+          ]
+        },
+        {
+          "name": "TimeOfflineChangeIntent",
+          "slots": [
+            {
+              "name": "minutos",
+              "type": "AMAZON.NUMBER"
+            }
+          ],
+          "samples": [
+            "tempo de desconexão para {minutos} minutos"
+          ]
+        },
+        {
+          "name": "GetIntervalIntent",
+          "slots": [],
+          "samples": [
+            "tempo de atualização dos dados"
+          ]
+        },
+        {
+          "name": "GetTimeOfflineIntent",
+          "slots": [],
+          "samples": [
+            "tolerância de ausência de dados"
+          ]
+        },
+        {
+          "name": "GetBraceletStatusIntent",
+          "slots": [],
+          "samples": [
+            "status da pulseira"
+          ]
+        },
+        {
+          "name": "GetDataIntent",
+          "slots": [],
+          "samples": [
+            "dados de monitoramento"
+          ]
+        }
+      ],
+      "types": []
+    }
+  },
+  "version": "21"
+}

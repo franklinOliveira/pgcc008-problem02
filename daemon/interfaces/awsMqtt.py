@@ -2,33 +2,31 @@ import AWSIoTPythonSDK.MQTTLib as AWSIoTPyMQTT
 
 class AwsMQTT():
     MQTTClient = None
-    #Saves min and max temp limits
-    uploadInterval = 1
-    braceletData = None
+    data = None
+    status = None
 
     def __init__(self):
         #Path to AWS IoT Core certificates and keys
-        ROOT_PATH = "/home/pi/database/"
+        ROOT_PATH = "/home/franklin/Desktop/Projetos/pgcc008-problem02/daemon/"
         ROOT_CA_PATH = ROOT_PATH+"certificates/AmazonRootCA1.pem.txt"
-        KEY_PATH = ROOT_PATH+"certificates/60d489f572-private.pem.key"
-        CERT_PATH = ROOT_PATH+"certificates/60d489f572-certificate.pem.crt"
+        KEY_PATH = ROOT_PATH+"certificates/b4078a262d-private.pem.key"
+        CERT_PATH = ROOT_PATH+"certificates/b4078a262d-certificate.pem.crt"
 
         #Configures MQTTClient (device) with AWS MQTT Broker endpoint
-        self.MQTTClient = AWSIoTPyMQTT.AWSIoTMQTTClient("pgcc008-problem02-database")
+        self.MQTTClient = AWSIoTPyMQTT.AWSIoTMQTTClient("pgcc008-problem02-daemon")
         self.MQTTClient.configureEndpoint("a18jmvtsiq4e9v-ats.iot.us-east-1.amazonaws.com", 8883)
         self.MQTTClient.configureCredentials(ROOT_CA_PATH, KEY_PATH, CERT_PATH)
 
         #Starts the process of subscribe topics
-        self.MQTTClient.subscribe("pgcc008/problem02/interval", 0, self.dataChangeCallback)
+        self.MQTTClient.subscribe("pgcc008/problem02/status", 0, self.dataChangeCallback)
         self.MQTTClient.subscribe("pgcc008/problem02/data", 0, self.dataChangeCallback)
 
     #Subscribe data from topics
     def dataChangeCallback(self, client, userdata, message):
-        if message.topic == "pgcc008/problem02/interval":
-            self.uploadInterval = int(message.payload.decode("utf-8"))
-        else:
-            self.braceletData = message.payload.decode("utf-8")
-
+        if message.topic == "pgcc008/problem02/data":
+            self.data = message.payload.decode("utf-8")
+        elif message.topic == "pgcc008/problem02/status":
+            self.status = message.payload.decode("utf-8")
 
     #Connects MQTTClient (device) with AWS MQTT Broker
     def connect(self):
