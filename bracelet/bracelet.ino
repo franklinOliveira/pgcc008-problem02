@@ -25,11 +25,12 @@
 #define DATABASE_LED D5
 #define AWS_LED D6
 #define PUBLISH_LED D7
+#define DISCONNECT_BUTTON D3
 
 //NTP time configuratios-------------------------------------------------------------------------------------------------
-#define NTP_OFFSET   60 * 60      
+#define NTP_OFFSET  -3 * 3600      
 #define NTP_INTERVAL 60 * 1000    
-#define NTP_ADDRESS  "a.st1.ntp.br"
+#define NTP_ADDRESS  "0.br.pool.ntp.org"
 
 //NTP time instances-----------------------------------------------------------------------------------------------------
 WiFiUDP ntpUDP;
@@ -57,6 +58,7 @@ int heartFrequency = 85;
 //Comunication type variables--------------------------------------------------------------------------------------------
 boolean databaseConnected = true;
 boolean collectingData = false;
+boolean disconnectState = false;
 
 //Data collected to send to AWS------------------------------------------------------------------------------------------
 unsigned long collectedTs[5];
@@ -147,6 +149,7 @@ void setup(){
   digitalWrite(DATABASE_LED, LOW);
   digitalWrite(AWS_LED, LOW);
   digitalWrite(PUBLISH_LED, LOW);
+  attachInterrupt(digitalPinToInterrupt(DISCONNECT_BUTTON), disconnectButtonDetectISR, RISING);  
 }
 
 void loop(){
@@ -158,12 +161,12 @@ void loop(){
   bodyTemperature = int(float(ads.readADC_SingleEnded(1)/MAX_ADC_READ)*MAX_BODY_TEMP);
 
   //Connected with local database-----------------------------------------------------
-  if(collectingData == false){
+  if(collectingData == false && disconnectState == false){
     database_mqtt_check();
     delay(5000);
   }
   //Not connected with local database-------------------------------------------------
-  if(databaseConnected == false){
+  if(databaseConnected == false || disconnectState == true){
     aws_mqtt_check();
     if(collectingData == true)
       delay(((publishInterval*60)/5)*1000);
@@ -298,4 +301,15 @@ void aws_mqtt_check(){
     nSamples = 0;
     collectingData = false;
   }
+}
+
+ICACHE_RAM_ATTR void disconnectButtonDetectISR() {
+  if (disconnectState == false){
+    disconnectState = true;
+    Serial.println("[INFO] Database not connected. Bracelet will publish on AWS"); 
+    databaseConnected = false;
+    digitalWrite(DATABASE_LED, LOW);
+  }
+  else
+    disconnectState = false;
 }
