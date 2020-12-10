@@ -28,7 +28,7 @@
 #define DISCONNECT_BUTTON D3
 
 //NTP time configuratios-------------------------------------------------------------------------------------------------
-#define NTP_OFFSET  -3 * 3600      
+#define NTP_OFFSET  0     
 #define NTP_INTERVAL 60 * 1000    
 #define NTP_ADDRESS  "0.br.pool.ntp.org"
 

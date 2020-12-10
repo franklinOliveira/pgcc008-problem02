@@ -1,0 +1,22 @@
+1. Mostrar o funcionamento normal coletando 10 amostras
+  - Pulseira conectada à base
+  - Mostrar o status conectado
+  - Variar a frequência cardíaca
+  - Variar a temperatura
+
+2. Mostrar o funcionamento separado coletando 5 amostras
+  - Pulseira conectada à nuvem
+  - Mostrar que o status permanece conectado
+  - Resposta da base dizendo que a pulseira desconectou dela e está esperando dados da nuvem
+  - Captura dos dados da nuvem pela base
+
+3. Desligar a pulseira
+  - Mostrar que o status foi alterado pela base para "desconectada"
+
+4. Ligar a pulseira
+  - Mostrar que o status foi alterado pela base para "conectada"
+
+5. Alterar o tempo de envio através da Alexa
+  - Mostrar que foi alterado na base e na Pulseira
+
+6. Consultar a situação atual dos dados pela Alexa

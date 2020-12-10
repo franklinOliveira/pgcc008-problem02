@@ -57,7 +57,7 @@ class States:
         else:
             print("  Previous samples not available")
         print("  Database started at:", self.startDateTime)
-        
+
         self.setStatus("conectada")
         print("  Bracelet available")
 
